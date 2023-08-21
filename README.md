@@ -335,18 +335,3 @@ debug = false
 * [LlmKira / Openaibot](https://github.com/LlmKira/Openaibot) - 全平台，多模态理解的 OpenAI 机器人
 * [RockChinQ / QChatGPT](https://github.com/RockChinQ/QChatGPT) - 基于 OpenAI 官方 API， 使用 GPT-3 的 QQ 机器人
 * [fuergaosi233 / wechat-chatgpt](https://github.com/fuergaosi233/wechat-chatgpt) - 在微信上迅速接入 ChatGPT
-
-
-## 🛠 贡献者名单   
-
-欢迎提出新的点子、 Pull Request。  
-
-<a href="https://github.com/lss233/chatgpt-mirai-qq-bot/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=lss233/chatgpt-mirai-qq-bot" />
-</a>
-
-Made with [contrib.rocks](https://contrib.rocks).
-
-## 💪 支持我们
-
-如果我们这个项目对你有所帮助，请给我们一颗 ⭐️
