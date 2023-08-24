@@ -11,12 +11,14 @@ from config import OpenAIAPIKey
 from constants import botManager, config
 
 DEFAULT_ENGINE: str = "gpt-3.5-turbo"
+DEFAULT_API_TYPE: str = "openai"
 
 
 class OpenAIChatbot:
     def __init__(self, api_info: OpenAIAPIKey):
         self.api_key = api_info.api_key
         self.proxy = api_info.proxy
+        self.api_type = api_info.api_type or DEFAULT_API_TYPE
         self.presence_penalty = config.openai.gpt_params.presence_penalty
         self.frequency_penalty = config.openai.gpt_params.frequency_penalty
         self.top_p = config.openai.gpt_params.top_p
@@ -53,7 +55,8 @@ class OpenAIChatbot:
 
     def add_to_conversation(self, message: str, role: str, session_id: str = "default") -> None:
         if role and message is not None:
-            self.conversation[session_id].append({"role": role, "content": message})
+            self.conversation[session_id].append(
+                {"role": role, "content": message})
         else:
             logger.warning("出现错误！返回消息为空，不添加到会话。")
             raise ValueError("出现错误！返回消息为空，不添加到会话。")
@@ -125,7 +128,8 @@ class ChatGPTAPIAdapter(BotAdapter):
 
         while self.bot.max_tokens - self.bot.count_tokens(session_id) < config.openai.gpt_params.min_tokens and \
                 len(self.bot.conversation[session_id]) > self.__conversation_keep_from:
-            self.bot.conversation[session_id].pop(self.__conversation_keep_from)
+            self.bot.conversation[session_id].pop(
+                self.__conversation_keep_from)
             logger.debug(
                 f"清理 token，历史记录遗忘后使用 token 数：{str(self.bot.count_tokens(session_id))}"
             )
@@ -151,19 +155,27 @@ class ChatGPTAPIAdapter(BotAdapter):
     def construct_data(self, messages: list = None, api_key: str = None, stream: bool = True):
         headers = {
             'Content-Type': 'application/json',
-            'Authorization': f'Bearer {api_key}'
         }
-        data = {
-            'model': self.bot.engine,
-            'messages': messages,
-            'stream': stream,
-            'temperature': self.bot.temperature,
-            'top_p': self.bot.top_p,
-            'presence_penalty': self.bot.presence_penalty,
-            'frequency_penalty': self.bot.frequency_penalty,
-            "user": 'user',
-            'max_tokens': self.bot.get_max_tokens(self.session_id, self.bot.engine),
-        }
+
+        if (self.api_info.api_type == DEFAULT_API_TYPE):
+            headers['Authorization'] = f'Bearer {api_key}'
+            data = {
+                'model': self.bot.engine,
+                'messages': messages,
+                'stream': stream,
+                'temperature': self.bot.temperature,
+                'top_p': self.bot.top_p,
+                'presence_penalty': self.bot.presence_penalty,
+                'frequency_penalty': self.bot.frequency_penalty,
+                "user": 'user',
+                'max_tokens': self.bot.get_max_tokens(self.session_id, self.bot.engine),
+            }
+        else:
+            headers['api-key'] = f'{api_key}'
+            data = {
+                'messages': messages,
+            }
+
         return headers, data
 
     def _prepare_request(self, session_id: str = None, messages: list = None, stream: bool = False):
@@ -184,16 +196,19 @@ class ChatGPTAPIAdapter(BotAdapter):
         result = await resp.json()
 
         total_tokens = result.get('usage', {}).get('total_tokens', None)
-        logger.debug(f"[ChatGPT-API:{self.bot.engine}] 使用 token 数：{total_tokens}")
+        logger.debug(
+            f"[ChatGPT-API:{self.bot.engine}] 使用 token 数：{total_tokens}")
         if total_tokens is None:
             raise Exception("Response does not contain 'total_tokens'")
 
-        content = result.get('choices', [{}])[0].get('message', {}).get('content', None)
+        content = result.get('choices', [{}])[0].get(
+            'message', {}).get('content', None)
         logger.debug(f"[ChatGPT-API:{self.bot.engine}] 响应：{content}")
         if content is None:
             raise Exception("Response does not contain 'content'")
 
-        response_role = result.get('choices', [{}])[0].get('message', {}).get('role', None)
+        response_role = result.get('choices', [{}])[0].get(
+            'message', {}).get('role', None)
         if response_role is None:
             raise Exception("Response does not contain 'role'")
 
@@ -202,12 +217,13 @@ class ChatGPTAPIAdapter(BotAdapter):
         return content
 
     async def request(self, session_id: str = None, messages: list = None) -> str:
-        proxy, api_endpoint, headers, data = self._prepare_request(session_id, messages, stream=False)
+        proxy, api_endpoint, headers, data = self._prepare_request(
+            session_id, messages, stream=False)
 
         async with aiohttp.ClientSession() as session:
             with async_timeout.timeout(self.bot.timeout):
                 async with session.post(f'{api_endpoint}/chat/completions', headers=headers,
-                                                    data=json.dumps(data), proxy=proxy) as resp:
+                                        data=json.dumps(data), proxy=proxy) as resp:
                     if resp.status != 200:
                         response_text = await resp.text()
                         raise Exception(
@@ -216,7 +232,8 @@ class ChatGPTAPIAdapter(BotAdapter):
                     return await self._process_response(resp, session_id)
 
     async def request_with_stream(self, session_id: str = None, messages: list = None) -> AsyncGenerator[str, None]:
-        proxy, api_endpoint, headers, data = self._prepare_request(session_id, messages, stream=True)
+        proxy, api_endpoint, headers, data = self._prepare_request(
+            session_id, messages, stream=True)
 
         async with aiohttp.ClientSession() as session:
             with async_timeout.timeout(self.bot.timeout):
@@ -261,7 +278,8 @@ class ChatGPTAPIAdapter(BotAdapter):
                                     completion_text += event_text
                                     self.latest_role = response_role
                                     yield event_text
-        self.bot.add_to_conversation(completion_text, response_role, session_id)
+        self.bot.add_to_conversation(
+            completion_text, response_role, session_id)
 
     async def compressed_session(self, session_id: str):
         if session_id not in self.bot.conversation or not self.bot.conversation[session_id]:
@@ -271,7 +289,8 @@ class ChatGPTAPIAdapter(BotAdapter):
         if self.bot.count_tokens(session_id) > config.openai.gpt_params.compressed_tokens:
             logger.debug('开始进行会话压缩')
 
-            filtered_data = [entry for entry in self.bot.conversation[session_id] if entry['role'] != 'system']
+            filtered_data = [
+                entry for entry in self.bot.conversation[session_id] if entry['role'] != 'system']
             self.bot.conversation[session_id] = [entry for entry in self.bot.conversation[session_id] if
                                                  entry['role'] not in ['assistant', 'user']]
 
@@ -281,7 +300,8 @@ class ChatGPTAPIAdapter(BotAdapter):
             async for text in self.request_with_stream(session_id=session_id, messages=filtered_data):
                 pass
 
-            token_count = self.bot.count_tokens(self.session_id, self.bot.engine)
+            token_count = self.bot.count_tokens(
+                self.session_id, self.bot.engine)
             logger.debug(f"压缩会话后使用 token 数：{token_count}")
 
     async def ask(self, prompt: str) -> AsyncGenerator[str, None]:
@@ -296,9 +316,11 @@ class ChatGPTAPIAdapter(BotAdapter):
 
         try:
             if self.bot.engine not in self.supported_models:
-                logger.warning(f"当前模型非官方支持的模型，请注意控制台输出，当前使用的模型为 {self.bot.engine}")
+                logger.warning(
+                    f"当前模型非官方支持的模型，请注意控制台输出，当前使用的模型为 {self.bot.engine}")
             logger.debug(f"[尝试使用ChatGPT-API:{self.bot.engine}] 请求：{prompt}")
-            self.bot.add_to_conversation(prompt, "user", session_id=self.session_id)
+            self.bot.add_to_conversation(
+                prompt, "user", session_id=self.session_id)
             start_time = time.time()
 
             full_response = ''
@@ -308,14 +330,18 @@ class ChatGPTAPIAdapter(BotAdapter):
                     full_response += resp
                     yield full_response
 
-                token_count = self.bot.count_tokens(self.session_id, self.bot.engine)
-                logger.debug(f"[ChatGPT-API:{self.bot.engine}] 响应：{full_response}")
-                logger.debug(f"[ChatGPT-API:{self.bot.engine}] 使用 token 数：{token_count}")
+                token_count = self.bot.count_tokens(
+                    self.session_id, self.bot.engine)
+                logger.debug(
+                    f"[ChatGPT-API:{self.bot.engine}] 响应：{full_response}")
+                logger.debug(
+                    f"[ChatGPT-API:{self.bot.engine}] 使用 token 数：{token_count}")
             else:
                 yield await self.request(session_id=self.session_id)
             event_time = time.time() - start_time
             if event_time is not None:
-                logger.debug(f"[ChatGPT-API:{self.bot.engine}] 接收到全部消息花费了{event_time:.2f}秒")
+                logger.debug(
+                    f"[ChatGPT-API:{self.bot.engine}] 接收到全部消息花费了{event_time:.2f}秒")
 
         except Exception as e:
             logger.error(f"[ChatGPT-API:{self.bot.engine}] 请求失败：\n{e}")
@@ -329,9 +355,12 @@ class ChatGPTAPIAdapter(BotAdapter):
             yield text
             role = 'assistant'
         if role not in ['assistant', 'user', 'system']:
-            raise ValueError(f"预设文本有误！仅支持设定 assistant、user 或 system 的预设文本，但你写了{role}。")
+            raise ValueError(
+                f"预设文本有误！仅支持设定 assistant、user 或 system 的预设文本，但你写了{role}。")
         if self.session_id not in self.bot.conversation:
             self.bot.conversation[self.session_id] = []
             self.__conversation_keep_from = 0
-        self.bot.conversation[self.session_id].append({"role": role, "content": text})
-        self.__conversation_keep_from = len(self.bot.conversation[self.session_id])
+        self.bot.conversation[self.session_id].append(
+            {"role": role, "content": text})
+        self.__conversation_keep_from = len(
+            self.bot.conversation[self.session_id])

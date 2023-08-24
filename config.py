@@ -96,7 +96,8 @@ class OpenAIAuths(BaseModel):
 
     gpt_params: OpenAIParams = OpenAIParams()
 
-    accounts: List[Union[OpenAIEmailAuth, OpenAISessionTokenAuth, OpenAIAccessTokenAuth, OpenAIAPIKey]] = []
+    accounts: List[Union[OpenAIEmailAuth, OpenAISessionTokenAuth,
+                         OpenAIAccessTokenAuth, OpenAIAPIKey]] = []
 
 
 class OpenAIAuthBase(BaseModel):
@@ -148,6 +149,8 @@ class OpenAIAccessTokenAuth(OpenAIAuthBase):
 
 class OpenAIAPIKey(OpenAIAuthBase):
     api_key: str
+    api_type: str
+    api_version: str
     """OpenAI 的 api_key"""
 
 
@@ -620,7 +623,8 @@ class Config(BaseModel):
             ) and os.path.exists('config.json'):
                 logger.info("正在转换旧版配置文件……")
                 Config.save_config(Config.__load_json_config())
-                logger.warning("提示：配置文件已经修改为 config.cfg，原来的 config.json 将被重命名为 config.json.old。")
+                logger.warning(
+                    "提示：配置文件已经修改为 config.cfg，原来的 config.json 将被重命名为 config.json.old。")
                 try:
                     os.rename('config.json', 'config.json.old')
                 except Exception as e:
@@ -640,7 +644,8 @@ class Config(BaseModel):
     def save_config(config: Config):
         try:
             with open("config.cfg", "wb") as f:
-                parsed_str = toml.dumps(config.dict()).encode(sys.getdefaultencoding())
+                parsed_str = toml.dumps(config.dict()).encode(
+                    sys.getdefaultencoding())
                 f.write(parsed_str)
         except Exception as e:
             logger.exception(e)

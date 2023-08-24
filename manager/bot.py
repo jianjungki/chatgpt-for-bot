@@ -129,7 +129,6 @@ class BotManager:
 
         await self.login_openai()
 
-
     async def login(self):
         self.bots = {
             "chatgpt-web": [],
@@ -200,7 +199,8 @@ class BotManager:
         if isinstance(bot, PoeClientWrapper):
             logger.info("Try to reset poe client.")
             bot_id = bot.client_id
-            self.bots["poe-web"] = [x for x in self.bots["poe-web"] if x.client_id != bot_id]
+            self.bots["poe-web"] = [x for x in self.bots["poe-web"]
+                                    if x.client_id != bot_id]
             p_b = bot.p_b
             new_client = PoeClient(token=p_b, proxy=bot.client.proxy)
             if self.poe_check_auth(new_client):
@@ -208,7 +208,8 @@ class BotManager:
                 self.bots["poe-web"].append(new_bot)
                 return new_bot
             else:
-                logger.warning("Failed to reset poe bot, try to pick a new bot.")
+                logger.warning(
+                    "Failed to reset poe bot, try to pick a new bot.")
                 return self.pick("poe-web")
         else:
             raise RuntimeError("Unsupported reset action.")
@@ -227,7 +228,8 @@ class BotManager:
                 logger.exception(e)
         if len(self.bots) < 1:
             logger.error("所有 Bing 账号均解析失败！")
-        logger.success(f"成功解析 {len(self.bots['bing-cookie'])}/{len(self.bing)} 个 Bing 账号！")
+        logger.success(
+            f"成功解析 {len(self.bots['bing-cookie'])}/{len(self.bing)} 个 Bing 账号！")
 
     def login_bard(self):
         for i, account in enumerate(self.bard):
@@ -238,7 +240,8 @@ class BotManager:
             logger.success("解析成功！", i=i + 1)
         if len(self.bots) < 1:
             logger.error("所有 Bard 账号均解析失败！")
-        logger.success(f"成功解析 {len(self.bots['bard-cookie'])}/{len(self.bing)} 个 Bard 账号！")
+        logger.success(
+            f"成功解析 {len(self.bots['bard-cookie'])}/{len(self.bing)} 个 Bard 账号！")
 
     def poe_check_auth(self, client: PoeClient) -> bool:
         try:
@@ -261,7 +264,8 @@ class BotManager:
             logger.exception(e)
         if len(self.bots["slack-accesstoken"]) < 1:
             logger.error("所有 Claude (Slack) 账号均解析失败！")
-        logger.success(f"成功解析 {len(self.bots['slack-accesstoken'])}/{len(self.slack)} 个 Claude (Slack) 账号！")
+        logger.success(
+            f"成功解析 {len(self.bots['slack-accesstoken'])}/{len(self.slack)} 个 Claude (Slack) 账号！")
 
     def login_xinghuo(self):
         try:
@@ -276,7 +280,8 @@ class BotManager:
             logger.exception(e)
         if len(self.bots["xinghuo-cookie"]) < 1:
             logger.error("所有 讯飞星火 账号均解析失败！")
-        logger.success(f"成功解析 {len(self.bots['xinghuo-cookie'])}/{len(self.xinghuo)} 个 讯飞星火 账号！")
+        logger.success(
+            f"成功解析 {len(self.bots['xinghuo-cookie'])}/{len(self.xinghuo)} 个 讯飞星火 账号！")
 
     def login_poe(self):
         from adapter.quora.poe import PoeClientWrapper
@@ -287,14 +292,16 @@ class BotManager:
                     account.proxy = proxy
                 bot = PoeClient(token=account.p_b, proxy=account.proxy)
                 if self.poe_check_auth(bot):
-                    self.bots["poe-web"].append(PoeClientWrapper(i, bot, account.p_b))
+                    self.bots["poe-web"].append(PoeClientWrapper(i,
+                                                bot, account.p_b))
                     logger.success("解析成功！", i=i + 1)
         except Exception as e:
             logger.error("解析失败：")
             logger.exception(e)
         if len(self.bots["poe-web"]) < 1:
             logger.error("所有 Poe 账号均解析失败！")
-        logger.success(f"成功解析 {len(self.bots['poe-web'])}/{len(self.poe)} 个 poe web 账号！")
+        logger.success(
+            f"成功解析 {len(self.bots['poe-web'])}/{len(self.poe)} 个 poe web 账号！")
 
     def login_yiyan(self):
         for i, account in enumerate(self.yiyan):
@@ -304,8 +311,10 @@ class BotManager:
             try:
                 if account.cookie_content:
                     logger.error("cookie_content 字段已弃用，请填写 BDUSS 和 BAIDUID！")
-                    account.BDUSS = (regex.findall(r"BDUSS=(.*?);", account.cookie_content) or [None])[0]
-                    account.BAIDUID = (regex.findall(r"BAIDUID=(.*?);", account.cookie_content) or [None])[0]
+                    account.BDUSS = (regex.findall(
+                        r"BDUSS=(.*?);", account.cookie_content) or [None])[0]
+                    account.BAIDUID = (regex.findall(
+                        r"BAIDUID=(.*?);", account.cookie_content) or [None])[0]
                 if not account.BAIDUID:
                     logger.error("未填写 BAIDUID，可能会有较高封号风险！")
                 if not account.BDUSS:
@@ -319,7 +328,8 @@ class BotManager:
                 logger.exception(e)
         if len(self.bots) < 1:
             logger.error("所有 文心一言 账号均解析失败！")
-        logger.success(f"成功解析 {len(self.bots['yiyan-cookie'])}/{len(self.yiyan)} 个 文心一言 账号！")
+        logger.success(
+            f"成功解析 {len(self.bots['yiyan-cookie'])}/{len(self.yiyan)} 个 文心一言 账号！")
 
     def login_chatglm(self):
         for i, account in enumerate(self.chatglm):
@@ -332,7 +342,8 @@ class BotManager:
                 logger.exception(e)
         if len(self.bots) < 1:
             logger.error("所有 ChatGLM 账号均解析失败！")
-        logger.success(f"成功解析 {len(self.bots['chatglm-api'])}/{len(self.chatglm)} 个 ChatGLM 账号！")
+        logger.success(
+            f"成功解析 {len(self.bots['chatglm-api'])}/{len(self.chatglm)} 个 ChatGLM 账号！")
 
     async def login_openai(self):  # sourcery skip: raise-specific-error
         counter = 0
@@ -354,7 +365,8 @@ class BotManager:
                 logger.success("登录成功！", i=i + 1)
                 counter = counter + 1
             except httpx.HTTPStatusError as e:
-                logger.error("登录失败! 可能是账号密码错误，或者 Endpoint 不支持 该登录方式。{exc}", exc=e)
+                logger.error(
+                    "登录失败! 可能是账号密码错误，或者 Endpoint 不支持 该登录方式。{exc}", exc=e)
             except (
                     ConnectTimeout, RequestException, SSLError, urllib3.exceptions.MaxRetryError,
                     ClientConnectorError) as e:
@@ -366,7 +378,8 @@ class BotManager:
                 if "failed to connect to the proxy server" in err_msg:
                     logger.error("{exc}", exc=e)
                 elif "All login method failed" in err_msg:
-                    logger.error("登录失败! 所有登录方法均已失效,请检查 IP、代理或者登录信息是否正确{exc}", exc=e)
+                    logger.error(
+                        "登录失败! 所有登录方法均已失效,请检查 IP、代理或者登录信息是否正确{exc}", exc=e)
                 else:
                     logger.error("未知错误：")
                     logger.exception(e)
@@ -384,7 +397,8 @@ class BotManager:
             logger.info(
                 "检测到您正在使用 xpra 虚拟显示环境，请使用你自己的浏览器访问 http://你的IP:14500，密码：{XPRA_PASSWORD}以看见浏览器。",
                 XPRA_PASSWORD=os.environ.get('XPRA_PASSWORD'))
-        bot = BrowserChatbot(config=account.dict(exclude_none=True, by_alias=False))
+        bot = BrowserChatbot(config=account.dict(
+            exclude_none=True, by_alias=False))
         return ChatGPTBrowserChatbot(bot, account.mode)
 
     def __setup_system_proxy(self):
@@ -418,7 +432,8 @@ class BotManager:
         """保存登录缓存"""
         account_sha = hashlib.sha256(account.json().encode('utf8')).hexdigest()
         q = Query()
-        self.cache_db.upsert({'account': account_sha, 'cache': cache}, q.account == account_sha)
+        self.cache_db.upsert(
+            {'account': account_sha, 'cache': cache}, q.account == account_sha)
 
     def __load_login_cache(self, account):
         """读取登录缓存"""
@@ -430,7 +445,8 @@ class BotManager:
     async def __login_V1(self, account: OpenAIAuthBase) -> ChatGPTBrowserChatbot:
         # sourcery skip: raise-specific-error
         logger.info("模式：无浏览器登录")
-        cached_account = dict(self.__load_login_cache(account), **account.dict())
+        cached_account = dict(
+            self.__load_login_cache(account), **account.dict())
         config = {}
         if proxy := self.__check_proxy(account.proxy):
             config['proxy'] = proxy
@@ -438,7 +454,8 @@ class BotManager:
             config['paid'] = True
         if cached_account.get('gpt4'):
             config['model'] = 'gpt-4'
-        if cached_account.get('model'):  # Ready for backward-compatibility & forward-compatibility
+        # Ready for backward-compatibility & forward-compatibility
+        if cached_account.get('model'):
             config['model'] = cached_account.get('model')
 
         def get_access_token():
@@ -451,7 +468,8 @@ class BotManager:
                 _, payload, _ = access_token.split(".")
 
                 # Decode the payload using base64 decoding
-                payload_data = base64.urlsafe_b64decode(payload + "=" * ((4 - len(payload) % 4) % 4))
+                payload_data = base64.urlsafe_b64decode(
+                    payload + "=" * ((4 - len(payload) % 4) % 4))
 
                 # Parse the JSON string to get the payload as a dictionary
                 payload_dict = json.loads(payload_data)
@@ -471,7 +489,8 @@ class BotManager:
                 else:
                     remaining_seconds = exp_timestamp - current_timestamp
                     remaining_days = remaining_seconds // (24 * 60 * 60)
-                    logger.info(f"[ChatGPT-Web] - {email} 的 access_token 还有 {remaining_days} 天过期")
+                    logger.info(
+                        f"[ChatGPT-Web] - {email} 的 access_token 还有 {remaining_days} 天过期")
                 await bot.get_conversations(0, 1)
                 return True
             except (V1Error, KeyError) as e:
