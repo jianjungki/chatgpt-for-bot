@@ -253,13 +253,13 @@ class ChatGPTAPIAdapter(BotAdapter):
                         )
                     response_text = await resp.text()
                     logger.debug("openai resp:{}".format(response_text))
+                    logger.debug("openai api resp:{}".format(resp.content))
 
                     response_role: str = ''
                     completion_text: str = ''
 
                     async for line in resp.content:
                         try:
-                            logger.debug("openai api resp:{}".format(line))
                             if self.api_info.api_type == DEFAULT_API_TYPE:
                                 line = line.decode('utf-8').strip()
                                 if not line.startswith("data: "):
@@ -276,6 +276,7 @@ class ChatGPTAPIAdapter(BotAdapter):
                             logger.error(f"未知错误: {e}\n响应内容: {resp.content}")
                             logger.error("请将该段日记提交到项目issue中，以便修复该问题。")
                             raise Exception(f"未知错误: {e}") from None
+                        logger.debug(f"进行逻辑判断: {event}")
                         if 'error' in event:
                             raise Exception(f"响应错误: {event['error']}")
                         if 'choices' in event and len(event['choices']) > 0 and 'delta' in event['choices'][0]:
