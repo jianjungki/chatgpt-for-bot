@@ -258,6 +258,7 @@ class ChatGPTAPIAdapter(BotAdapter):
                     completion_text: str = ''
 
                     async for line in resp.content:
+                        logger.debug("openai resp:{}".format(line))
                         try:
                             line = line.decode('utf-8').strip()
                             if not line.startswith("data: "):
