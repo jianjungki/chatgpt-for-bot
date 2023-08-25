@@ -260,12 +260,13 @@ class ChatGPTAPIAdapter(BotAdapter):
                     async for line in resp.content:
                         logger.debug("openai resp:{}".format(line))
                         try:
-                            line = line.decode('utf-8').strip()
-                            if not line.startswith("data: "):
-                                continue
-                            line = line[len("data: "):]
-                            if line == "[DONE]":
-                                break
+                            if self.api_info.api_type == DEFAULT_API_TYPE:
+                                line = line.decode('utf-8').strip()
+                                if not line.startswith("data: "):
+                                    continue
+                                line = line[len("data: "):]
+                                if line == "[DONE]":
+                                    break
                             if not line:
                                 continue
                             event = json.loads(line)
