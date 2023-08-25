@@ -238,9 +238,13 @@ class ChatGPTAPIAdapter(BotAdapter):
         proxy, api_endpoint, headers, data = self._prepare_request(
             session_id, messages, stream=True)
 
+        requestLink = f'{api_endpoint}/chat/completions'
+        if self.api_info.api_version is not None:
+            requestLink += '?api-version=' + self.api_info.api_version
+        logger.info(requestLink)
         async with aiohttp.ClientSession() as session:
             with async_timeout.timeout(self.bot.timeout):
-                async with session.post(f'{api_endpoint}/chat/completions', headers=headers, data=json.dumps(data),
+                async with session.post(requestLink, headers=headers, data=json.dumps(data),
                                         proxy=proxy) as resp:
                     if resp.status != 200:
                         response_text = await resp.text()
