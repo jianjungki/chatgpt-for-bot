@@ -221,7 +221,7 @@ class ChatGPTAPIAdapter(BotAdapter):
             session_id, messages, stream=False)
         requestLink = f'{api_endpoint}/chat/completions'
         if self.api_info.api_version is not None:
-            requestLink += '?api_version=' + self.api_info.api_version
+            requestLink += '?api-version=' + self.api_info.api_version
         logger.info(requestLink)
         async with aiohttp.ClientSession() as session:
             with async_timeout.timeout(self.bot.timeout):
