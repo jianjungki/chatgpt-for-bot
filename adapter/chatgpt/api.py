@@ -254,7 +254,7 @@ class ChatGPTAPIAdapter(BotAdapter):
 
                     response_role: str = ''
                     completion_text: str = ''
-                    logger.debug("openai resp:{}".format(response_text))
+                    logger.debug("openai resp:{}".format(resp.text()))
                     async for line in resp.content:
                         try:
                             line = line.decode('utf-8').strip()
