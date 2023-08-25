@@ -159,23 +159,21 @@ class ChatGPTAPIAdapter(BotAdapter):
 
         if (self.api_info.api_type == DEFAULT_API_TYPE):
             headers['Authorization'] = f'Bearer {api_key}'
-            data = {
-                'model': self.bot.engine,
-                'messages': messages,
-                'stream': stream,
-                'temperature': self.bot.temperature,
-                'top_p': self.bot.top_p,
-                'presence_penalty': self.bot.presence_penalty,
-                'frequency_penalty': self.bot.frequency_penalty,
-                "user": 'user',
-                'max_tokens': self.bot.get_max_tokens(self.session_id, self.bot.engine),
-            }
+
         else:
             headers['api-key'] = f'{api_key}'
-            data = {
-                'messages': messages,
-            }
 
+        data = {
+            'model': self.bot.engine,
+            'messages': messages,
+            'stream': stream,
+            'temperature': self.bot.temperature,
+            'top_p': self.bot.top_p,
+            'presence_penalty': self.bot.presence_penalty,
+            'frequency_penalty': self.bot.frequency_penalty,
+            "user": 'user',
+            'max_tokens': self.bot.get_max_tokens(self.session_id, self.bot.engine),
+        }
         return headers, data
 
     def _prepare_request(self, session_id: str = None, messages: list = None, stream: bool = False):
