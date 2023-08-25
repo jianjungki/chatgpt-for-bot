@@ -194,7 +194,7 @@ class ChatGPTAPIAdapter(BotAdapter):
     async def _process_response(self, resp, session_id: str = None):
 
         result = await resp.json()
-
+        logger.info("openai resp:{}".format(resp))
         total_tokens = result.get('usage', {}).get('total_tokens', None)
         logger.debug(
             f"[ChatGPT-API:{self.bot.engine}] 使用 token 数：{total_tokens}")
@@ -222,6 +222,7 @@ class ChatGPTAPIAdapter(BotAdapter):
         requestLink = f'{api_endpoint}/chat/completions'
         if self.api_info.api_version is not None:
             requestLink += '?api_version=' + self.api_info.api_version
+        logger.info(requestLink)
         async with aiohttp.ClientSession() as session:
             with async_timeout.timeout(self.bot.timeout):
                 async with session.post(requestLink, headers=headers,
