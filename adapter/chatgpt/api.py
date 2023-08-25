@@ -194,7 +194,7 @@ class ChatGPTAPIAdapter(BotAdapter):
     async def _process_response(self, resp, session_id: str = None):
 
         result = await resp.json()
-        logger.info("openai resp:{}".format(resp))
+
         total_tokens = result.get('usage', {}).get('total_tokens', None)
         logger.debug(
             f"[ChatGPT-API:{self.bot.engine}] 使用 token 数：{total_tokens}")
@@ -254,7 +254,7 @@ class ChatGPTAPIAdapter(BotAdapter):
 
                     response_role: str = ''
                     completion_text: str = ''
-
+                    logger.debug("openai resp:{}".format(resp))
                     async for line in resp.content:
                         try:
                             line = line.decode('utf-8').strip()
