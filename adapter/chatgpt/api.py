@@ -258,8 +258,8 @@ class ChatGPTAPIAdapter(BotAdapter):
                     completion_text: str = ''
 
                     async for line in resp.content:
-                        logger.debug("openai resp:{}".format(line))
                         try:
+                            logger.debug("openai api resp:{}".format(line))
                             if self.api_info.api_type == DEFAULT_API_TYPE:
                                 line = line.decode('utf-8').strip()
                                 if not line.startswith("data: "):
