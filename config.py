@@ -85,7 +85,7 @@ class OpenAIParams(BaseModel):
     min_tokens: int = 1000
     compressed_session: bool = False
     compressed_tokens: int = 1000
-    stream: bool = True
+    stream: bool = False
 
 
 class OpenAIAuths(BaseModel):
